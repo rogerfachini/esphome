@@ -4,11 +4,13 @@ import esphome.codegen as cg
 from esphome.components import time as time_
 from esphome.config_helpers import merge_config
 import esphome.config_validation as cv
+from esphome import automation
 from esphome.const import (
     CONF_ID,
     CONF_PLATFORM,
     CONF_SERVERS,
     CONF_TIME,
+    CONF_TRIGGER_ID,
     PLATFORM_BK72XX,
     PLATFORM_ESP32,
     PLATFORM_ESP8266,
@@ -25,9 +27,12 @@ _LOGGER = logging.getLogger(__name__)
 DEPENDENCIES = ["network"]
 
 CONF_SNTP = "sntp"
+CONF_ON_SMOOTH_TIME_SYNC = "on_smooth_time_sync"
+CONF_SMOOTH_SYNC = "smooth_sync"
 
 sntp_ns = cg.esphome_ns.namespace("sntp")
 SNTPComponent = sntp_ns.class_("SNTPComponent", time_.RealTimeClock)
+SmoothSyncTrigger = sntp_ns.class_("SmoothSyncTrigger", automation.Trigger.template(), cg.Component)
 
 DEFAULT_SERVERS = ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"]
 
@@ -92,6 +97,12 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_SERVERS, default=DEFAULT_SERVERS): cv.All(
                 cv.ensure_list(cv.Any(cv.domain, cv.hostname)), cv.Length(min=1, max=3)
             ),
+            cv.Optional(CONF_SMOOTH_SYNC, default=False): cv.boolean,
+            cv.Optional(CONF_ON_SMOOTH_TIME_SYNC): automation.validate_automation(
+                {
+                    cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(SmoothSyncTrigger),
+                }
+            ),
         }
     ).extend(cv.COMPONENT_SCHEMA),
     cv.only_on(
@@ -111,15 +122,23 @@ FINAL_VALIDATE_SCHEMA = _sntp_final_validate
 
 async def to_code(config):
     servers = config[CONF_SERVERS]
+    smooth_sync = config[CONF_SMOOTH_SYNC]
 
     # Define server count at compile time
     cg.add_define("SNTP_SERVER_COUNT", len(servers))
 
     # Pass string literals to constructor - stored in flash/rodata by compiler
-    var = cg.new_Pvariable(config[CONF_ID], servers)
+    var = cg.new_Pvariable(config[CONF_ID], servers, smooth_sync)
 
     await cg.register_component(var, config)
     await time_.register_time(var, config)
+    
+    # Register on_smooth_time_sync automation
+    if conf_list := config.get(CONF_ON_SMOOTH_TIME_SYNC):
+       for conf in conf_list:
+            trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID], var)
+            await cg.register_component(trigger, conf)
+            await automation.build_automation(trigger, [], conf)
 
     if CORE.is_esp8266 and len(servers) > 1:
         # We need LwIP features enabled to get 3 SNTP servers (not just one)
