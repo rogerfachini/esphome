@@ -35,6 +35,9 @@ void SNTPComponent::setup() {
       SNTPComponent::instance->defer([]() { SNTPComponent::instance->time_synced(); });
     }
   });
+#if defined (SNTP_GET_SERVERS_FROM_DHCP)
+  esp_sntp_servermode_dhcp(true);
+#endif
   esp_sntp_init();
 #else
   sntp_stop();

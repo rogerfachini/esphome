@@ -25,6 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 DEPENDENCIES = ["network"]
 
 CONF_SNTP = "sntp"
+CONF_SERVERS_FROM_DHCP = "servers_from_dhcp"
 
 sntp_ns = cg.esphome_ns.namespace("sntp")
 SNTPComponent = sntp_ns.class_("SNTPComponent", time_.RealTimeClock)
@@ -89,9 +90,10 @@ CONFIG_SCHEMA = cv.All(
     time_.TIME_SCHEMA.extend(
         {
             cv.GenerateID(): cv.declare_id(SNTPComponent),
-            cv.Optional(CONF_SERVERS, default=DEFAULT_SERVERS): cv.All(
+            cv.Exclusive(CONF_SERVERS, "ntp_server_source"): cv.All(
                 cv.ensure_list(cv.Any(cv.domain, cv.hostname)), cv.Length(min=1, max=3)
             ),
+            cv.Exclusive(CONF_SERVERS_FROM_DHCP, "ntp_server_source"): cv.boolean,
         }
     ).extend(cv.COMPONENT_SCHEMA),
     cv.only_on(
@@ -110,7 +112,15 @@ FINAL_VALIDATE_SCHEMA = _sntp_final_validate
 
 
 async def to_code(config):
-    servers = config[CONF_SERVERS]
+    # Check if using DHCP servers or manual servers
+    use_dhcp = config.get(CONF_SERVERS_FROM_DHCP, False)
+
+    # Get configured servers
+    servers = config.get(CONF_SERVERS, DEFAULT_SERVERS if not use_dhcp else [])
+
+    # Configure NTP servers from DHCP at compile time
+    # cg.add_define("SNTP_GET_SERVERS_FROM_DHCP", int(use_dhcp))
+    cg.add_define("LWIP_DHCP_GET_NTP_SRV", int(use_dhcp))
 
     # Define server count at compile time
     cg.add_define("SNTP_SERVER_COUNT", len(servers))
@@ -121,6 +131,6 @@ async def to_code(config):
     await cg.register_component(var, config)
     await time_.register_time(var, config)
 
-    if CORE.is_esp8266 and len(servers) > 1:
+    if CORE.is_esp8266 and (len(servers) > 1 or use_dhcp):
         # We need LwIP features enabled to get 3 SNTP servers (not just one)
         cg.add_build_flag("-DPIO_FRAMEWORK_ARDUINO_LWIP2_LOW_MEMORY")
