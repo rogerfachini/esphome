@@ -1,0 +1,75 @@
+spi:
+  - id: spi_bus
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+
+substitutions:
+  # 7-segment pins
+  seg_a_pin: GPIO2
+  seg_b_pin: GPIO4
+  seg_c_pin: GPIO5
+  seg_d_pin: GPIO12
+  seg_e_pin: GPIO13
+  seg_f_pin: GPIO14
+  seg_g_pin: GPIO15
+  dp_pin: GPIO16
+  digit_1_pin: GPIO0
+  digit_2_pin: GPIO1
+  digit_3_pin: GPIO3
+  digit_4_pin: GPIO9
+
+  # 9-segment pins
+  seg_9_a_pin: GPIO2
+  seg_9_b_pin: GPIO4
+  seg_9_c_pin: GPIO5
+  seg_9_d_pin: GPIO12
+  seg_9_e_pin: GPIO13
+  seg_9_f_pin: GPIO14
+  seg_9_g_pin: GPIO15
+  seg_9_i_pin: GPIO16
+  seg_9_j_pin: GPIO0
+  digit_9_1_pin: GPIO1
+  digit_9_2_pin: GPIO3
+
+  # 14-segment pins
+  seg_14_a1_pin: GPIO2
+  seg_14_a2_pin: GPIO4
+  seg_14_b_pin: GPIO5
+  seg_14_c_pin: GPIO12
+  seg_14_d1_pin: GPIO13
+  seg_14_d2_pin: GPIO14
+  seg_14_e_pin: GPIO15
+  seg_14_f_pin: GPIO16
+  seg_14_g1_pin: GPIO0
+  seg_14_g2_pin: GPIO1
+  seg_14_h_pin: GPIO3
+  seg_14_j_pin: GPIO9
+  seg_14_k_pin: GPIO10
+  seg_14_m_pin: GPIO2
+  digit_14_1_pin: GPIO4
+
+  # 16-segment pins
+  seg_16_a1_pin: GPIO2
+  seg_16_a2_pin: GPIO4
+  seg_16_b_pin: GPIO5
+  seg_16_c_pin: GPIO12
+  seg_16_d1_pin: GPIO13
+  seg_16_d2_pin: GPIO14
+  seg_16_e_pin: GPIO15
+  seg_16_f_pin: GPIO16
+  seg_16_g1_pin: GPIO0
+  seg_16_g2_pin: GPIO1
+  seg_16_h_pin: GPIO3
+  seg_16_j_pin: GPIO9
+  seg_16_k_pin: GPIO10
+  seg_16_l_pin: GPIO2
+  seg_16_m_pin: GPIO4
+  seg_16_n_pin: GPIO5
+  dp_16_upper_pin: GPIO12
+  dp_16_lower_pin: GPIO13
+  digit_16_1_pin: GPIO14
+  digit_16_2_pin: GPIO15
+
+  cs_pin: GPIO15
+
+<<: !include common.yaml

@@ -1,0 +1,71 @@
+# Example configuration for 7-segment display with shift register
+# This example shows a 4-digit 7-segment display driven by shift registers
+
+sn74hc595:
+  - id: segment_sr
+    data_pin: GPIO23
+    clock_pin: GPIO18
+    latch_pin: GPIO5
+    sr_count: 2  # 2 shift registers (16 outputs)
+
+# Define outputs for digit selection
+output:
+  - platform: gpio
+    id: digit_1_out
+    pin: GPIO19
+  - platform: gpio
+    id: digit_2_out
+    pin: GPIO21
+  - platform: gpio
+    id: digit_3_out
+    pin: GPIO22
+  - platform: gpio
+    id: digit_4_out
+    pin: GPIO32
+
+display:
+  - platform: segment_led_display
+    id: my_display
+    display_type: 7_SEGMENT
+    
+    # 7 segment pins driven by first shift register
+    # For common anode displays, add "inverted: true" to each pin
+    segment_pins:
+      - {sn74hc595: segment_sr, number: 0}  # Segment A
+      - {sn74hc595: segment_sr, number: 1}  # Segment B
+      - {sn74hc595: segment_sr, number: 2}  # Segment C
+      - {sn74hc595: segment_sr, number: 3}  # Segment D
+      - {sn74hc595: segment_sr, number: 4}  # Segment E
+      - {sn74hc595: segment_sr, number: 5}  # Segment F
+      - {sn74hc595: segment_sr, number: 6}  # Segment G
+    
+    # Optional decimal point
+    decimal_point_pins:
+      - {sn74hc595: segment_sr, number: 7}  # DP
+    
+    # Digit select pins - now using output components
+    digit_select_pins:
+      - digit_1_out
+      - digit_2_out
+      - digit_3_out
+      - digit_4_out
+    
+    update_interval: 500ms
+    lambda: |-
+      // Display temperature with 1 decimal place
+      // it.printf("%.1f", id(my_sensor).state);
+      
+      // Or display simple text
+      it.print("HELLO");
+
+# Example with time display
+time:
+  - platform: sntp
+    id: sntp_time
+
+sensor:
+  - platform: template
+    name: "Example Temperature"
+    id: my_sensor
+    lambda: return 23.5;
+    update_interval: 60s

@@ -1,0 +1,158 @@
+output:
+  # Digit select outputs for 7-segment display
+  - platform: gpio
+    id: digit_1_output
+    pin: ${digit_1_pin}
+  - platform: gpio
+    id: digit_2_output
+    pin: ${digit_2_pin}
+  - platform: gpio
+    id: digit_3_output
+    pin: ${digit_3_pin}
+  - platform: gpio
+    id: digit_4_output
+    pin: ${digit_4_pin}
+
+  # Digit select outputs for 9-segment display
+  - platform: gpio
+    id: digit_9_1_output
+    pin:
+      number: ${digit_9_1_pin}
+      inverted: true
+  - platform: gpio
+    id: digit_9_2_output
+    pin:
+      number: ${digit_9_2_pin}
+      inverted: true
+
+  # Digit select outputs for 14-segment display
+  - platform: gpio
+    id: digit_14_1_output
+    pin: ${digit_14_1_pin}
+
+  # Digit select outputs for 16-segment display
+  - platform: gpio
+    id: digit_16_1_output
+    pin: ${digit_16_1_pin}
+  - platform: gpio
+    id: digit_16_2_output
+    pin: ${digit_16_2_pin}
+
+display:
+  # Test 7-segment display
+  - platform: segment_led_display
+    id: display_7seg
+    display_type: 7_SEGMENT
+    segment_pins:
+      - ${seg_a_pin}
+      - ${seg_b_pin}
+      - ${seg_c_pin}
+      - ${seg_d_pin}
+      - ${seg_e_pin}
+      - ${seg_f_pin}
+      - ${seg_g_pin}
+    decimal_point_pins:
+      - ${dp_pin}
+    digit_select_pins:
+      - digit_1_output
+      - digit_2_output
+      - digit_3_output
+      - digit_4_output
+    lambda: |-
+      it.printf("%.1f", 12.3);
+
+  # Test 9-segment display (common anode - using inverted pins)
+  - platform: segment_led_display
+    id: display_9seg
+    display_type: 9_SEGMENT
+    segment_pins:
+      - number: ${seg_9_a_pin}
+        inverted: true
+      - number: ${seg_9_b_pin}
+        inverted: true
+      - number: ${seg_9_c_pin}
+        inverted: true
+      - number: ${seg_9_d_pin}
+        inverted: true
+      - number: ${seg_9_e_pin}
+        inverted: true
+      - number: ${seg_9_f_pin}
+        inverted: true
+      - number: ${seg_9_g_pin}
+        inverted: true
+      - number: ${seg_9_i_pin}
+        inverted: true
+      - number: ${seg_9_j_pin}
+        inverted: true
+    digit_select_pins:
+      - digit_9_1_output
+      - digit_9_2_output
+    lambda: |-
+      it.print("AB");
+
+  # Test 14-segment display (starburst)
+  - platform: segment_led_display
+    id: display_14seg
+    display_type: 14_SEGMENT
+    segment_pins:
+      - ${seg_14_a1_pin}
+      - ${seg_14_a2_pin}
+      - ${seg_14_b_pin}
+      - ${seg_14_c_pin}
+      - ${seg_14_d1_pin}
+      - ${seg_14_d2_pin}
+      - ${seg_14_e_pin}
+      - ${seg_14_f_pin}
+      - ${seg_14_g1_pin}
+      - ${seg_14_g2_pin}
+      - ${seg_14_h_pin}
+      - ${seg_14_j_pin}
+      - ${seg_14_k_pin}
+      - ${seg_14_m_pin}
+    digit_select_pins:
+      - digit_14_1_output
+    lambda: |-
+      it.print("X");
+
+  # Test 16-segment display (full starburst)
+  - platform: segment_led_display
+    id: display_16seg
+    display_type: 16_SEGMENT
+    segment_pins:
+      - ${seg_16_a1_pin}
+      - ${seg_16_a2_pin}
+      - ${seg_16_b_pin}
+      - ${seg_16_c_pin}
+      - ${seg_16_d1_pin}
+      - ${seg_16_d2_pin}
+      - ${seg_16_e_pin}
+      - ${seg_16_f_pin}
+      - ${seg_16_g1_pin}
+      - ${seg_16_g2_pin}
+      - ${seg_16_h_pin}
+      - ${seg_16_j_pin}
+      - ${seg_16_k_pin}
+      - ${seg_16_l_pin}
+      - ${seg_16_m_pin}
+      - ${seg_16_n_pin}
+    decimal_point_pins:
+      - ${dp_16_upper_pin}
+      - ${dp_16_lower_pin}
+    digit_select_pins:
+      - digit_16_1_output
+      - digit_16_2_output
+    lambda: |-
+      it.print("OK");
+      it.set_colon(1, true);
+
+# Test API methods
+esphome:
+  on_boot:
+    - priority: 100
+      then:
+        - lambda: |-
+            id(display_7seg).print("8888");
+            id(display_7seg).printf("%.2f", 45.67);
+            id(display_7seg).clear();
+            id(display_7seg).set_decimal_point(2, 0, true);
+            id(display_16seg).set_colon(1, true);
